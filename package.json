@@ -1,0 +1,25 @@
+{
+  "name": "youtube-clone-with-chai-aur-code",
+  "version": "1.0.0",
+  "description": "Part of Learning Industry grade backend skills",
+  "keywords": [
+    "javascript",
+    "backend",
+    "chain"
+  ],
+  "homepage": "https://github.com/Samarth-Ad/backend-00#readme",
+  "bugs": {
+    "url": "https://github.com/Samarth-Ad/backend-00/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Samarth-Ad/backend-00.git"
+  },
+  "license": "ISC",
+  "author": "Samarth-Ad",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
