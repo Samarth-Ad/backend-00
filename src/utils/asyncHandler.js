@@ -1,9 +1,11 @@
 const asyncHandler = function(requestHandler){
-    (request,response,next)=>{
+    return (request,response,next)=>{
         Promise.resolve(requestHandler()).
         catch((error) => { next(error) })
     }
 }
+
+// To understand middlewares refer to this chat with claude.ai : https://claude.ai/share/c43df8f7-d3ad-4743-8bec-4a7b40cd6ea8
 
 
 // const asyncHandler = ()=>{}

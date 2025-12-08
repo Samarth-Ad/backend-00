@@ -1,4 +1,5 @@
-class ApiResponse extends error {
+// Purpose: Standardized success responses
+class ApiResponse {
     constructor(
         statusCode,
         data,
