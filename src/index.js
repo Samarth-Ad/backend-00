@@ -2,11 +2,25 @@
 import dotenv from "dotenv" ;
 dotenv.config({path : "./env"})
 import connectDB from "./db/index.js";
+import { app } from "./app.js";
 
+const PORT = process.env.PORT || 8000;
 
-const PORT = process.env.PORT;
-
-connectDB();
+// This connectDB function returns a promise so in .then we'll initialize our express app as the promise is consumed and resolved
+connectDB()
+.then(()=>{
+    try {
+        app.listen(PORT,()=>{
+            console.log(`Server is listening at ${port}`);
+        })
+    } catch (error) {
+        console.log(error)
+    }
+})
+.catch((error)=>{
+    console.log("Connection failed :(")
+    console.log(error);
+});
 
 
 
