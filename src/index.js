@@ -11,7 +11,7 @@ connectDB()
     .then(() => {
         try {
             app.listen(PORT, () => {
-                console.log(`Server is listening at ${PORT}`);
+                console.log(`Server is listening at http://localhost:${PORT}`);
             })
         } catch (error) {
             console.log(error)
