@@ -10,7 +10,7 @@ cloudinary.config({
 
 const uploadOnCloudinary = async (localFilePath) => {
     try {
-        if (!localFilePath) {
+        if (!localFilePath) { // can also use fs.existssync(localFilePath) to check whether the actual file exists or not, instead of checking only file path 
             // throw new error("The file path doesn't exists");
             return null;
         }
@@ -23,11 +23,13 @@ const uploadOnCloudinary = async (localFilePath) => {
         )
         console.log("File is uploaded on cloudinary : ",response.url)
         console.log(response)
+        // fs.unlinkSync(localFilePath)
 
         return response;
 
     } catch (error) {
         fs.unlinkSync(localFilePath) // remove the locally saved temporary file as upload got failed
+        // return null
     }
 }
 

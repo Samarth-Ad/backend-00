@@ -60,7 +60,7 @@ userSchema.pre("save", async function (next) { // Don't use arrow function, cuz 
     // // Every time any parameter is change of the schema's object the password will get hashed again
 
     if (this.isModified("password")) {
-        this.password = bcrypt.hash(this.password, 10)
+        this.password = await bcrypt.hash(this.password, 10)
         next()
     }
     else {
@@ -77,6 +77,8 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 // access-token won't be stored in database
 // but refresh-token will be
 // both are JWT tokens
+// to understand the complete essence of access and refresh token the refer to this chat with claude.ai : https://claude.ai/share/b0fd1406-2690-488e-9af4-bfe9348936ea
+
 
 // access-token
 userSchema.methods.generateAccessToken = function () {
