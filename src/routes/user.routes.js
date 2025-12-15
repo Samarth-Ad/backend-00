@@ -13,7 +13,7 @@ router.route("/register").post(
         },
         //Cover image
         {
-            name: "CoverPage",
+            name: "CoverImage",
             maxCount: 1,
         },
     ),
