@@ -5,7 +5,7 @@ const router = Router()
 
 router.route("/register").post(
     // MiddleWare -1
-    upload.fields(
+    upload.fields([
         //Avatar
         {
             name: "avatar",
@@ -13,10 +13,10 @@ router.route("/register").post(
         },
         //Cover image
         {
-            name: "CoverImage",
+            name: "coverImage",
             maxCount: 1,
         },
-    ),
+    ]),
     // MiddleWare - 2
     registerUser
 )

@@ -28,11 +28,11 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // if the data is coming from FORMs and in JSON format, (we'll deal with data coming from URL later)
 
-    const { fullName, email, username, password } = req.body
+    const { fullname, email, username, password } = req.body
     console.log("email : ", email)
     // console.log("password : ",password)
 
-    // if (fullName === ""){
+    // if (fullname === ""){
     //     throw ApiError(
     //         statusCode = 400,
     //         message = "Full Name is empty"
@@ -40,30 +40,46 @@ const registerUser = asyncHandler(async (req, res) => {
     // }
 
     if (
-        [fullName, email, username, password].some((field) => field?.trim() === "")
+        [fullname, email, username, password].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(
-            statusCode = 400,
-            message = "All fields are required to be filled",
+             400,
+            "All fields are required to be filled",
 
         )
     }
 
-    const userExisted = User.findOne({
+    const userExisted = await User.findOne({
         $or: [{ username }, { email }]
     })
 
     if (userExisted) {
         throw new ApiError(
-            statusCode = 409,
-            message = "User with email or username Already exists!"
+            409,
+            "User with email or username Already exists!"
         )
     }
 
     // File handling
-    console.log(req.files)
+    // console.log(req.files)
+    // avatar: [
+    // {
+    //   fieldname: 'avatar',
+    //   originalname: 'test_profile.png',
+    //   encoding: '7bit',
+    //   mimetype: 'image/png',
+    //   destination: './public/temp',
+    //   filename: 'test_profile.png',
+    //   path: 'public\\temp\\test_profile.png',
+    //   size: 1304568
+    // }
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+    let coverImageLocalPath ;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
 
     if (!avatarLocalPath) {
         throw new ApiError(
@@ -72,7 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
         );
     }
 
-    // Upload images in cloudianry 
+    // Upload images in cloudinary 
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
@@ -87,10 +103,11 @@ const registerUser = asyncHandler(async (req, res) => {
         username: username.toLowerCase(),
         avatar: avatar.url,
         email: email,
-        fullName: fullName,
-        coverImage: coverImage?.url || ""
+        fullname: fullname,
+        coverImage: coverImage?.url || "",
+        password: password
     });
-    console.log(User.findById(user._id))
+    // console.log(User.findById(user._id))
 
     const userCreated = await User.findById(user._id).select(
         "-password -refreshTokens"
@@ -102,14 +119,14 @@ const registerUser = asyncHandler(async (req, res) => {
             "Something went wrong during registration of user"
         )
     }
-    console.log(user)
+    // console.log(user)
 
     // Final response
-    return res.statusCode(201).json(
+    return res.status(201).json(
         new ApiResponse(
-            statusCode = 201,
-            data = user,
-            message = "User Successfully registered"
+            201,
+            user,
+            "User Successfully registered"
         )
     )
 

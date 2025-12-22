@@ -61,7 +61,8 @@ userSchema.pre("save", async function (next) { // Don't use arrow function, cuz 
 
     if (this.isModified("password")) {
         this.password = await bcrypt.hash(this.password, 10)
-        next()
+        // next()
+        // modern Mongoose: async pre hooks should not call next() — return a promise instead
     }
     else {
         next()
