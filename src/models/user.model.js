@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema(
             type: String, // we store encrypted passwords
             required: [true, "Password is require"]
         },
-        refreshTokens: {
+        refreshToken: {
             type: String,
         }
 
