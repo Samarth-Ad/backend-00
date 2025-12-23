@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { registerUser } from "../controllers/user.controller.js";
+import { loginUser, logOutUser, registerUser } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router()
 
+// refer to this chat with claude.ai : https://claude.ai/share/91b6e4fd-0407-48ef-b9e2-8c06e89808b0
 router.route("/register").post(
     // MiddleWare -1
     upload.fields([
@@ -20,8 +22,14 @@ router.route("/register").post(
     // MiddleWare - 2
     registerUser
 )
-// router.route("/login").post(login) // login is not defined yet
 
-// refer to this chat with claude.ai : https://claude.ai/share/91b6e4fd-0407-48ef-b9e2-8c06e89808b0
+router.route("/login").post(
+    loginUser
+)
+
+
+// secured routes 
+router.route("/logout").post(verifyJWT,logOutUser)
+
 
 export default router;
