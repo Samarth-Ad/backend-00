@@ -65,7 +65,7 @@ userSchema.pre("save", async function (next) { // Don't use arrow function, cuz 
         // modern Mongoose: async pre hooks should not call next() — return a promise instead
     }
     else {
-        next()
+        // next()
     }
 })
 

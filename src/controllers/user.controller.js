@@ -12,14 +12,16 @@ const generateAccessAndRefreshToken = async function (userId) {
         const refreshToken = user.generateRefreshToken();
 
         user.refreshToken = refreshToken
+        console.log(user.refreshToken)
         await user.save({ validateBeforeSave: false })
+        console.log(user)
 
         return { accessToken, refreshToken }
 
     } catch (error) {
         throw new ApiError(
-            "500",
-            "Something went wrong while generating refresh and access token"
+            500,
+            error.message || "Something went wrong while generating refresh and access token"
         )
     }
 }
@@ -130,7 +132,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log(User.findById(user._id))
 
     const userCreated = await User.findById(user._id).select(
-        "-password -refreshTokens"
+        "-password -refreshToken"
     );
 
     if (!userCreated) {
@@ -161,7 +163,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { email, username, password } = req.body;
 
-    if (!email || !username) {
+    if (!email && !username) {
         throw new ApiError(
             400,
             "Username or password not found",
