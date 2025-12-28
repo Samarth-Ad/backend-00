@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
-
+import jwt from "jsonwebtoken"
 
 const generateAccessAndRefreshToken = async function (userId) {
     try {
@@ -25,7 +25,6 @@ const generateAccessAndRefreshToken = async function (userId) {
         )
     }
 }
-
 
 const registerUser = asyncHandler(async (req, res) => {
 
@@ -155,7 +154,6 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 
-
 const loginUser = asyncHandler(async (req, res) => {
     // 0) Pehle Request se data lo
     // 1) Refresh token generate karwana padega, unique to user
@@ -228,7 +226,7 @@ const logOutUser = asyncHandler(async function (req, res) {
             }
         },
         {
-            new:true
+            new: true
         },
     )
     const options = {
@@ -237,17 +235,81 @@ const logOutUser = asyncHandler(async function (req, res) {
     }
 
     return res
-    .status(200)
-    .clearCookie("accessToken",options)
-    .clearCookie("refreshToken",options)
-    .json(
-        new ApiResponse(
-            200,
-            {},
-            "User logged out successfully"
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "User logged out successfully"
+            )
         )
-    )
+})
+
+const refreshAccessToken = asyncHandler(async function (req, res) {
+
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
+    // used "req.body.refreshToken" if the request is from mobile
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(
+            401,
+            "Unauthorized Request"
+        )
+    }
+
+    try {
+        const decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        )
+
+        const user = await User.findById(decodedToken?._id)
+
+        if (!user) {
+            throw new ApiError(
+                401,
+                "Invalid refresh token"
+            )
+        }
+
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(
+                401,
+                "Refresh token expired or used"
+            )
+        }
+
+        const options = {
+            httpOnly: true,
+            secure: true,
+        }
+
+        const { accessToken, newRefreshToken } = await generateAccessAndRefreshToken(user._id);
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new ApiResponse(
+                    200,
+                    {
+                        accessToken: accessToken,
+                        refreshToken: newRefreshToken
+                    },
+                    "Access Token refreshed"
+                )
+            )
+    } catch (error) {
+        throw ApiError(
+            401,
+            error.message || "Invalid Refresh token"
+        )
+    }
+
 })
 
 
-export { registerUser, loginUser, logOutUser }
+export { registerUser, loginUser, logOutUser, refreshAccessToken }
