@@ -312,4 +312,167 @@ const refreshAccessToken = asyncHandler(async function (req, res) {
 })
 
 
-export { registerUser, loginUser, logOutUser, refreshAccessToken }
+const changeCurrentPassword = asyncHandler(async function (req, res) {
+    const { oldPassword, newPassword } = req.body
+
+    // this function runs when the user is already logged in, mean's we have user in req's body
+
+    const user = await User.findById(req.user?._id)
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(
+            401,
+            "Password is incorrect"
+        )
+    }
+
+    user.password = newPassword
+    await user.save({ validateBeforeSave: false })
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Password reset successful"
+        )
+    )
+})
+
+const getCurrentUser = asyncHandler(async function (req, res) {
+    // when end point for this function is invoked then it means that user is already logged-in , and in our auth.middleware.js we've stored the user as it is in request
+
+    return res
+        .status(200)
+        .json(200, req.user, "current user fetched successfully")
+
+})
+
+const updateAccountDetails = asyncHandler(async function (req, res) {
+    const { fullname, email } = req.body
+
+    if (!fullname || !email) {
+        throw new ApiError(
+            400,
+            "All fields are required"
+        )
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullname: fullname,
+                email: email
+            }
+        },
+        { new: true }
+    ).select("-password")
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                "Details changed successfully",
+            )
+        )
+
+
+})
+
+const updateUserAvatar = asyncHandler(async function (req, res) {
+    const avatarLocalFile = req.file?.path
+
+    if (!avatarLocalFile) {
+        throw new ApiError(
+            400,
+            "Avatar file is missing"
+        )
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalFile)
+
+    if (!avatar) {
+        throw new ApiError(
+            400,
+            "Error while uploading avatar on cloudinary"
+        )
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        { new: true }
+    ).select("-password")
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user,
+                "Avatar updated successfully"
+            )
+        )
+})
+
+
+const coverImageThumbnail = asyncHandler(async function (req, res) {
+
+    const coverImageLocalFile = req.file?.path
+
+    if (!coverImageLocalFile) {
+        throw new ApiError(
+            400,
+            "Thumbnail file is missing"
+        )
+    }
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalFile)
+
+    if (!coverImage) {
+        throw new ApiError(
+            400,
+            "Error while uploading Cover Image on cloudinary"
+        )
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                coverImage: coverImage.url
+            }
+        },
+        { new: true }
+    ).select("-password")
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user,
+                "Cover Image updated successfully"
+            )
+        )
+})
+
+
+
+export {
+    registerUser,
+    loginUser,
+    logOutUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateUserAvatar,
+    updateAccountDetails,
+    updateVideoThumbnail
+}
