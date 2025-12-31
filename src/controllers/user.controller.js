@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js"
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async function (userId) {
     try {
@@ -497,7 +498,7 @@ const getUserChannelProfile = asyncHandler(async function (req, res) {
             }
         },
         // to count subscribers
-        {   
+        {
             $lookup: {
                 from: "subscriptions", // from subscription model
                 localField: "_id",
@@ -515,7 +516,7 @@ const getUserChannelProfile = asyncHandler(async function (req, res) {
             }
         },
         // These new fields get added to the user's object/document
-        {   
+        {
             $addFields: {
                 subscriberCount: {
                     $size: "$subscribers"
@@ -526,7 +527,7 @@ const getUserChannelProfile = asyncHandler(async function (req, res) {
                 isSubscribed: {
                     $cond: {
                         if: {
-                            $in : [req.user?._id,"$subscribers.subscriber"]
+                            $in: [req.user?._id, "$subscribers.subscriber"]
                         },
                         then: true,
                         else: false
@@ -549,7 +550,7 @@ const getUserChannelProfile = asyncHandler(async function (req, res) {
         }
     ])
 
-    if(!channel?.length){
+    if (!channel?.length) {
         throw new ApiError(
             404,
             "Channel doesn't exists"
@@ -557,20 +558,74 @@ const getUserChannelProfile = asyncHandler(async function (req, res) {
     }
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(
-            200,
-            channel[0],
-            "User Channel fetched successfully"
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                channel[0],
+                "User Channel fetched successfully"
+            )
         )
-    )
 
 })
 
 
-const getUserWatchHistory = asyncHandler(async function(req,res) {
-    
+const getUserWatchHistory = asyncHandler(async function (req, res) {
+    const user = await User.aggregate([
+        {
+            $match: {
+                // _id: req.user?._id --> This won't work because mongoose doesn't handle aggregation pipelines with it's own magic
+                _id: new mongoose.Types.ObjectId(req.user?._id)
+            },
+
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                //nested pipeline to get the info/data on the owner of video present in playlist 
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        fullname: 1,
+                                        avatar: 1
+                                    },
+                                },
+                            ]
+                        },
+                    },
+                    // This pipeline just reformats the data, since till now we've been receiving an array and we only need that array's 1st object 
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user[0].watchHistory,
+            "Fetched user's watch history successfully",
+        )
+    )
 })
 
 
