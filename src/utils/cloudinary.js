@@ -1,6 +1,8 @@
 import { v2 as cloudinary } from "cloudinary";
 import { error } from "console";
 import fs from "fs"
+import { ApiError } from "./ApiError"
+import { asyncHandler } from "./asyncHandler";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -21,7 +23,7 @@ const uploadOnCloudinary = async (localFilePath) => {
                 resource_type: "auto"
             }
         )
-        console.log("File is uploaded on cloudinary : ",response.url)
+        console.log("File is uploaded on cloudinary : ", response.url)
         console.log(response)
         fs.unlinkSync(localFilePath)
 
@@ -33,4 +35,29 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-export {uploadOnCloudinary};
+// Needs more work
+const deleteFromCloudinary = async (cloudinary_url) => {
+
+    if (!cloudinary_url) {
+        throw new ApiError(
+            400,
+            "Cloudinary URL not found while deleting asset"
+        )
+    }
+
+    const parts = cloudinary_url.split("/")
+    const file = parts[parts.length - 1]
+    const public_id = file.split(".")[0]
+
+    const response = await cloudinary.uploader.destroy(
+        public_id,
+        {
+            resource_type: "auto"
+        }
+    )
+
+    return response;
+
+}
+
+export { uploadOnCloudinary, deleteFromCloudinary };

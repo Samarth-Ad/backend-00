@@ -32,6 +32,7 @@ app.use(cookieParser())
 
 //routes import
 import userRouter from "./routes/user.routes.js"
+import videoRouter from "./routes/video.route.js"
 
 //routes declaration
 // instead of providing paths/routes in direct methods such as app.get(), app.post() etc, we'll use middleware(app.use()) since we are segregating the routes from now on 
@@ -39,5 +40,7 @@ import userRouter from "./routes/user.routes.js"
 // app.use("/users",userRouter) --> this is good but not standard practice 
 app.use("/api/v1/users",userRouter)
 // http://localhost:8000/api/v1/users/register (since we have defined only register method in users route)
+
+app.use("/api/v1/videos",videoRouter)
 
 export { app };
