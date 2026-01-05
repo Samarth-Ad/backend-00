@@ -1,4 +1,4 @@
-export const DB_NAME = "chaiTube"
+const DB_NAME = "chaiTube"
 
 const FILE_TYPES = {
   VIDEO: "video",
@@ -11,3 +11,9 @@ const RESOURCE_TYPES = {
   VIDEO: "video",
   IMAGE: "image",
 };
+
+export {
+  DB_NAME,
+  FILE_TYPES,
+  RESOURCE_TYPES
+}
