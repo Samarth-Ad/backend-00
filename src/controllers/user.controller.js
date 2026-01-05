@@ -111,8 +111,8 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Upload images in cloudinary 
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    const avatar = await uploadOnCloudinary(avatarLocalPath,"avatar");
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath,"coverimage");
 
     if (!avatar) {
         throw new ApiError(
@@ -401,7 +401,7 @@ const updateUserAvatar = asyncHandler(async function (req, res) {
     }
 
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
+    const avatar = await uploadOnCloudinary(avatarLocalPath,"avatar")
     if (!avatar) {
         throw new ApiError(
             400,
@@ -415,7 +415,7 @@ const updateUserAvatar = asyncHandler(async function (req, res) {
     await user.save();
 
     if (oldAvatar) {
-        const isDeleted = await deleteFromCloudinary(oldAvatar)
+        const isDeleted = await deleteFromCloudinary(oldAvatar,"image")
         console.log(isDeleted)
     }
 
@@ -450,7 +450,7 @@ const updateCoverImage = asyncHandler(async function (req, res) {
     }
 
 
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath,"coverimage")
     if (!coverImage) {
         throw new ApiError(
             400,
@@ -464,7 +464,7 @@ const updateCoverImage = asyncHandler(async function (req, res) {
     await user.save();
 
     if (oldCoverImage) {
-        const isDeleted = await deleteFromCloudinary(oldCoverImage)
+        const isDeleted = await deleteFromCloudinary(oldCoverImage,"image")
         console.log(isDeleted)
     }
 

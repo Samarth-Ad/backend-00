@@ -3,7 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Video } from "../models/video.model.js"
-import mongoose from "mongoose";
+
 
 
 const uploadVideo = asyncHandler(async function (req, res) {
@@ -27,8 +27,8 @@ const uploadVideo = asyncHandler(async function (req, res) {
             "Video file not found"
         )
     }
-    
-    
+
+
     const thumbnailFileLocalPath = req.files?.thumbnailFile[0]?.path
     if (!thumbnailFileLocalPath) {
         throw new ApiError(
@@ -37,7 +37,7 @@ const uploadVideo = asyncHandler(async function (req, res) {
         )
     }
 
-    const videoFile = await uploadOnCloudinary(videoFileLocalPath)
+    const videoFile = await uploadOnCloudinary(videoFileLocalPath,"video")
     if (!videoFile) {
         throw new ApiError(
             400,
@@ -45,9 +45,9 @@ const uploadVideo = asyncHandler(async function (req, res) {
         );
     };
 
-    const thumbnail = await uploadOnCloudinary(thumbnailFileLocalPath)
+    const thumbnail = await uploadOnCloudinary(thumbnailFileLocalPath,"thumbnail")
     if (!thumbnail) {
-        await deleteFromCloudinary(videoFile.url)
+        await deleteFromCloudinary(videoFile.url,"video")
         throw new ApiError(
             400,
             "Thumbnail File is required"
@@ -57,10 +57,12 @@ const uploadVideo = asyncHandler(async function (req, res) {
 
 
     const duration = videoFile?.duration
-    if(duration >= 0 && duration === undefined){
+    if (duration === undefined || duration <= 0) {
+        await deleteFromCloudinary(videoFile.url,"video")
+        await deleteFromCloudinary(thumbnail.url,"image")
         throw new ApiError(
             400,
-            "Video's length is less than or equal to zero"
+            "Video's length is less than or equal to zero or is undefined"
         )
     }
 
@@ -75,9 +77,9 @@ const uploadVideo = asyncHandler(async function (req, res) {
 
     // const videoCreated = await Video.findById(video._id)
 
-    if(!video){
-        await deleteFromCloudinary(videoFile.url)
-        await deleteFromCloudinary(thumbnail.url)
+    if (!video) {
+        await deleteFromCloudinary(videoFile.url,"video")
+        await deleteFromCloudinary(thumbnail.url,"video")
         throw new ApiError(
             500,
             "Video couldn't be saved in DB"
