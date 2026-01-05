@@ -32,7 +32,7 @@ app.use(cookieParser())
 
 //routes import
 import userRouter from "./routes/user.routes.js"
-import videoRouter from "./routes/video.route.js"
+import videoRouter from "./routes/video.routes.js"
 
 //routes declaration
 // instead of providing paths/routes in direct methods such as app.get(), app.post() etc, we'll use middleware(app.use()) since we are segregating the routes from now on 
