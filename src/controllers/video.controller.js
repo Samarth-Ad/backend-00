@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteFromCloudinary, uploadOnCloudinary, getDurationOfVideo } from "../utils/cloudinary.js";
 import { Video } from "../models/video.model.js"
 
 
@@ -55,23 +55,25 @@ const uploadVideo = asyncHandler(async function (req, res) {
     };
 
 
-
+    console.log(videoFile)
     const duration = videoFile?.duration
-    if (duration === undefined || duration <= 0) {
-        await deleteFromCloudinary(videoFile.url,"video")
-        await deleteFromCloudinary(thumbnail.url,"image")
-        throw new ApiError(
-            400,
-            "Video's length is less than or equal to zero or is undefined"
-        )
-    }
+    console.log(duration)
+
+    // if (duration === undefined || duration <= 0) {
+    //     await deleteFromCloudinary(videoFile.url,"video")
+    //     await deleteFromCloudinary(thumbnail.url,"image")
+    //     throw new ApiError(
+    //         400,
+    //         "Video's length is less than or equal to zero or is undefined"
+    //     )
+    // }
 
     const video = await Video.create({
         videoFile: videoFile.url,
         thumbnail: thumbnail.url,
         title: title,
         description: description,
-        duration: duration,
+        duration: await getDurationOfVideo(videoFile.url),
         owner: user_id
     })
 

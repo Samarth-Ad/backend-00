@@ -183,4 +183,38 @@ const deleteFromCloudinary = async (cloudinary_url, resourceType = "auto") => {
 
 }
 
-export { uploadOnCloudinary, deleteFromCloudinary };
+const getDurationOfVideo = async function(cloudinary_url){
+    
+    if(!cloudinary_url || !cloudinary_url.includes("cloudinary.com")){
+        throw new ApiError(
+            400,
+            "Invalid cloudinary url, couldn't fetch duration of video asset"
+        )
+    }
+
+    const public_id = extractPublicIDFromURL(cloudinary_url)
+    console.log(public_id)
+    try {
+        const response = await cloudinary.api.resource(
+            public_id,
+            {
+                resource_type : "video",
+                media_metadata: true,
+            }
+        )
+        // console.log(response)
+        
+        
+        return response.duration ;
+    } catch (error) {
+        console.error("Cloudinary error while fetching the duration of video asset:", error);
+    }
+}
+// testing function
+
+// await getDurationOfVideo("video/video/kyrqjfbywksy6kcl0vdn");
+// console.log(await getDurationOfVideo("video/video/kyrqjfbywksy6kcl0vdn"))
+
+// console.log(await getDurationOfVideo("https://res.cloudinary.com/dqefhfoi3/video/upload/v1767684460/video/video/lzcewrfghlciidu1nwlr.mp4"))
+
+export { uploadOnCloudinary, deleteFromCloudinary, getDurationOfVideo };
