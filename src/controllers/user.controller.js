@@ -111,8 +111,8 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Upload images in cloudinary 
-    const avatar = await uploadOnCloudinary(avatarLocalPath,"avatar");
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath,"coverimage");
+    const avatar = await uploadOnCloudinary(avatarLocalPath, "avatar");
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath, "coverimage");
 
     if (!avatar) {
         throw new ApiError(
@@ -222,8 +222,11 @@ const logOutUser = asyncHandler(async function (req, res) {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            // $set: {
+            //     refreshToken: undefined
+            // }
+            $unset: {
+                refreshToken: 1
             }
         },
         {
@@ -401,7 +404,7 @@ const updateUserAvatar = asyncHandler(async function (req, res) {
     }
 
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath,"avatar")
+    const avatar = await uploadOnCloudinary(avatarLocalPath, "avatar")
     if (!avatar) {
         throw new ApiError(
             400,
@@ -415,7 +418,7 @@ const updateUserAvatar = asyncHandler(async function (req, res) {
     await user.save();
 
     if (oldAvatar) {
-        const isDeleted = await deleteFromCloudinary(oldAvatar,"image")
+        const isDeleted = await deleteFromCloudinary(oldAvatar, "image")
         console.log(isDeleted)
     }
 
@@ -450,7 +453,7 @@ const updateCoverImage = asyncHandler(async function (req, res) {
     }
 
 
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath,"coverimage")
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath, "coverimage")
     if (!coverImage) {
         throw new ApiError(
             400,
@@ -464,7 +467,7 @@ const updateCoverImage = asyncHandler(async function (req, res) {
     await user.save();
 
     if (oldCoverImage) {
-        const isDeleted = await deleteFromCloudinary(oldCoverImage,"image")
+        const isDeleted = await deleteFromCloudinary(oldCoverImage, "image")
         console.log(isDeleted)
     }
 
@@ -490,7 +493,7 @@ const getUserChannelProfile = asyncHandler(async function (req, res) {
     }
 
     // User.find({username})
-    const channel = User.aggregate([
+    const channel = await User.aggregate([
         // Aggregation pipelines
         {
             $match: {
@@ -550,6 +553,7 @@ const getUserChannelProfile = asyncHandler(async function (req, res) {
         }
     ])
 
+    console.log(channel)
     if (!channel?.length) {
         throw new ApiError(
             404,
@@ -618,14 +622,14 @@ const getUserWatchHistory = asyncHandler(async function (req, res) {
     ])
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(
-            200,
-            user[0].watchHistory,
-            "Fetched user's watch history successfully",
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user[0].watchHistory,
+                "Fetched user's watch history successfully",
+            )
         )
-    )
 })
 
 
