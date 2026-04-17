@@ -123,8 +123,8 @@ const addComment = asyncHandler(async (req, res) => {
 
 const updateComment = asyncHandler(async (req, res) => {
     // TODO: update a comment
-    const commentId = req.params
-    const newContent = req.body
+    const {commentId} = req.params
+    const {newContent} = req.body
 
     const userId = req.user?._id 
     if(!userId){
@@ -156,15 +156,34 @@ const updateComment = asyncHandler(async (req, res) => {
         );
     }
 
-    if(!content || content.trim()===""){
+    if(!newContent || newContent.trim()===""){
         throw new ApiError(
             400,
             "No content found in comments"
         )
     }
 
-    comment.content = content
-    await comment.save()
+    const updatedComment = await Comment.findOneAndUpdate(
+        {
+            _id: commentId,
+            owner: userId
+        },
+        {
+            $set: {
+                content: newContent.trim()
+            }
+        },
+        {
+            new: true 
+        }
+    )
+
+    if (!updatedComment) {
+        throw new ApiError(
+            500,
+            "Couldn't update the comment"
+        )
+    }
 
     return res.status(200).json(
         new ApiResponse(
